@@ -1,0 +1,131 @@
+APP/templates/index.html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FuelWatch Data</title>
+    <style>
+        .flash-messages {
+            padding: 10px;
+            margin: 10px 0;
+            background-color: #ffebee;
+            border: 1px solid #ef9a9a;
+            border-radius: 4px;
+        }
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f0f0f0;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        .header {
+            background-color: #333;
+            color: white;
+            padding: 20px;
+            text-align: center;
+            border-radius: 5px;
+            margin-bottom: 20px;
+        }
+        .fuel-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
+        }
+        .fuel-card {
+            background-color: white;
+            padding: 20px;
+            border-radius: 5px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        .price {
+            font-size: 24px;
+            font-weight: bold;
+            color: #2ecc71;
+        }
+        .station-name {
+            font-weight: bold;
+            margin: 10px 0;
+        }
+        .update-time {
+            color: #666;
+            font-size: 0.9em;
+        }
+        .search-form {
+            max-width: 500px;
+            margin: 20px auto;
+            text-align: center;
+        }
+        .search-form input {
+            padding: 10px;
+            width: 60%;
+            margin-right: 10px;
+        }
+        .search-form button {
+            padding: 10px 20px;
+            background-color: #2ecc71;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        .distance {
+            color: #666;
+            font-size: 0.9em;
+            margin-top: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>WA FuelWatch Prices</h1>
+            <p>Find the 30 closest fuel stations to your location</p>
+        </div>
+
+        {% with messages = get_flashed_messages() %}
+            {% if messages %}
+                <div class="flash-messages">
+                    {% for message in messages %}
+                        <p>{{ message }}</p>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        {% endwith %}
+
+        <form class="search-form" method="POST">
+            <input type="text" name="suburb" placeholder="Enter your suburb or address" value="{{ suburb }}" required>
+            <button type="submit">Search</button>
+        </form>
+
+        <div class="fuel-grid">
+            {% if fuel_data %}
+                {% if fuel_data|length == 0 %}
+                    <div class="fuel-card">
+                        <p>No fuel stations found in or near {{ suburb }}.</p>
+                    </div>
+                {% else %}
+                    {% for station in fuel_data %}
+                    <div class="fuel-card">
+                        <div class="price">${{ station.price }}</div>
+                        <div class="station-name">{{ station.trading_name }}</div>
+                        <div class="address">{{ station.address }}</div>
+                        <div class="suburb">{{ station.location }}</div>
+                        <div class="distance">Distance: {{ "%.1f"|format(station.distance) }} km</div>
+                        <div class="update-time">Updated: {{ station.updated }}</div>
+                    </div>
+                    {% endfor %}
+                {% endif %}
+            {% else %}
+                <div class="fuel-card">
+                    <p>Enter your suburb or address to find nearby fuel stations.</p>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</body>
+</html>
