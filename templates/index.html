@@ -88,6 +88,43 @@ APP/templates/index.html
         .fuel-type {
         margin-bottom: 10px;
         }
+        .search-controls {
+        display: flex;
+        gap: 10px;
+        justify-content: center;
+        align-items: center;
+        margin-bottom: 20px;
+        }
+
+        .fuel-select,
+        .distance-select {
+        padding: 10px;
+        border-radius: 5px;
+        border: 1px solid #ddd;
+        min-width: 120px;
+        }
+
+        .search-form input {
+        padding: 10px;
+        flex-grow: 1;
+        max-width: 400px;
+        border-radius: 5px;
+        border: 1px solid #ddd;
+        }
+
+        @media (max-width: 768px) {
+        .search-controls {
+            flex-direction: column;
+            align-items: stretch;
+        }
+        
+        .fuel-select,
+        .distance-select,
+        .search-form input {
+            width: 100%;
+            margin-bottom: 10px;
+        }
+        }
     </style>
 </head>
 <body>
@@ -108,17 +145,26 @@ APP/templates/index.html
         {% endwith %}
 
         <form class="search-form" method="POST">
-            <div class="fuel-type">
-                <select name="fuel_type">
+            <div class="search-controls">
+                <select name="fuel_type" class="fuel-select">
                     {% for value, name in fuel_types.items() %}
                         <option value="{{ value }}" {% if value == selected_fuel %}selected{% endif %}>
                             {{ name }}
                         </option>
                     {% endfor %}
                 </select>
+                
+                <select name="max_distance" class="distance-select">
+                    {% for value, name in distance_options.items() %}
+                        <option value="{{ value }}" {% if value == selected_distance %}selected{% endif %}>
+                            {{ name }}
+                        </option>
+                    {% endfor %}
+                </select>
+                
+                <input type="text" name="suburb" placeholder="Enter your suburb or address" value="{{ suburb }}" required>
+                <button type="submit">Search</button>
             </div>
-            <input type="text" name="suburb" placeholder="Enter your suburb or address" value="{{ suburb }}" required>
-            <button type="submit">Search</button>
         </form>
 
         <div class="fuel-grid">

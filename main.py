@@ -23,6 +23,16 @@ FUEL_TYPES = {
     '11': 'E85'
 }
 
+DISTANCE_OPTIONS = {
+    '0': 'No limit',
+    '5': '5 km',
+    '10': '10 km',
+    '15': '15 km',
+    '20': '20 km',
+    '25': '25 km',
+    '30': '30 km',
+}
+
 def get_coordinates(address):
     logger.debug(f"Attempting to get coordinates for address: {address}")
     try:
@@ -87,8 +97,8 @@ def get_fuel_data(product=1, suburb=None):
         logger.error(f"Error fetching data: {str(e)}")
         return None
 
-def sort_by_distance(fuel_data, user_coords, max_distance=5):  # Reduced initial radius
-    """Sort stations by distance and filter those within max_distance km"""
+def sort_by_distance(fuel_data, user_coords, max_distance=0):
+    """Sort stations by distance and filter by max_distance if specified"""
     if not user_coords or not fuel_data:
         return fuel_data
 
@@ -97,37 +107,42 @@ def sort_by_distance(fuel_data, user_coords, max_distance=5):  # Reduced initial
         try:
             station_coords = (float(station.latitude), float(station.longitude))
             distance = geopy.distance.distance(user_coords, station_coords).km
-            # Add all stations with their distance, don't filter by distance yet
             station.distance = round(distance, 2)
-            stations_with_distance.append(station)
+            # Only add stations within max_distance (if specified)
+            if max_distance == 0 or distance <= float(max_distance):
+                stations_with_distance.append(station)
         except Exception as e:
             logger.error(f"Error calculating distance: {str(e)}")
             continue
 
     # Sort all stations by distance
     sorted_data = sorted(stations_with_distance, key=lambda x: x.distance)
-    logger.debug(f"Closest station is {sorted_data[0].distance}km away")
+    if sorted_data:
+        logger.debug(f"Closest station is {sorted_data[0].distance}km away")
     
-    return sorted_data[:30]  # Return closest 30 stations regardless of distance
+    return sorted_data[:30]  # Return closest 30 stations within distance limit
 
 @app.route('/', methods=['GET', 'POST'])
 def index():
     suburb = request.form.get('suburb', '')
     fuel_type = request.form.get('fuel_type', '1')  # Default to ULP
+    max_distance = request.form.get('max_distance', '0')  # Default to no limit
     fuel_data = None
+    
     logger.debug(f"Request method: {request.method}")
     logger.debug(f"Address submitted: {suburb}")
     logger.debug(f"Fuel type selected: {FUEL_TYPES.get(fuel_type)}")
+    logger.debug(f"Max distance selected: {DISTANCE_OPTIONS.get(max_distance)}")
     
     if request.method == 'POST' and suburb:
         user_coords = get_coordinates(suburb)
         if user_coords:
-            # Get fuel data with suburb name and fuel type
             fuel_data = get_fuel_data(product=int(fuel_type), suburb=suburb)
             if fuel_data:
-                fuel_data = sort_by_distance(fuel_data, user_coords)
+                fuel_data = sort_by_distance(fuel_data, user_coords, float(max_distance))
                 logger.debug(f"Processed {len(fuel_data)} stations")
-                logger.debug(f"Closest station is {fuel_data[0].distance}km away")
+                if fuel_data:
+                    logger.debug(f"Closest station is {fuel_data[0].distance}km away")
             else:
                 flash("Error fetching fuel station data")
         else:
@@ -137,7 +152,10 @@ def index():
                          fuel_data=fuel_data, 
                          suburb=suburb, 
                          fuel_types=FUEL_TYPES,
-                         selected_fuel=fuel_type)
+                         distance_options=DISTANCE_OPTIONS,
+                         selected_fuel=fuel_type,
+                         selected_distance=max_distance)
+
 
 if __name__ == "__main__":
     app.run(debug=True)
