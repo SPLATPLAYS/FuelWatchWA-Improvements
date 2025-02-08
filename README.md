@@ -90,27 +90,3 @@ SPLATPLAYS
 ## Support
 
 For support, please open an issue in the GitHub repository.
-```
-
-This README.md provides:
-- Clear project description
-- Installation instructions
-- Usage guide
-- Project structure
-- Configuration details
-- Contributing guidelines
-- License information
-- Acknowledgments and support information
-
-You can save this as `README.md` in your project root directory. Feel free to modify any sections to better match your project's specific needs or requirements.
-This README.md provides:
-- Clear project description
-- Installation instructions
-- Usage guide
-- Project structure
-- Configuration details
-- Contributing guidelines
-- License information
-- Acknowledgments and support information
-
-You can save this as `README.md` in your project root directory. Feel free to modify any sections to better match your project's specific needs or requirements.
