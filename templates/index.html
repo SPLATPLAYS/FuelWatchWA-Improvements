@@ -78,6 +78,16 @@ APP/templates/index.html
             font-size: 0.9em;
             margin-top: 5px;
         }
+        .search-form select {
+        padding: 10px;
+        margin-right: 10px;
+        border-radius: 5px;
+        border: 1px solid #ddd;
+        }
+    
+        .fuel-type {
+        margin-bottom: 10px;
+        }
     </style>
 </head>
 <body>
@@ -98,6 +108,15 @@ APP/templates/index.html
         {% endwith %}
 
         <form class="search-form" method="POST">
+            <div class="fuel-type">
+                <select name="fuel_type">
+                    {% for value, name in fuel_types.items() %}
+                        <option value="{{ value }}" {% if value == selected_fuel %}selected{% endif %}>
+                            {{ name }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
             <input type="text" name="suburb" placeholder="Enter your suburb or address" value="{{ suburb }}" required>
             <button type="submit">Search</button>
         </form>

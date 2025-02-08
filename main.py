@@ -13,6 +13,16 @@ logger = logging.getLogger(__name__)
 app = Flask(__name__)
 app.secret_key = 'your_secret_key_here'  # Required for flashing messages
 
+FUEL_TYPES = {
+    '1': 'ULP',
+    '2': 'PULP',
+    '4': 'Diesel',
+    '5': 'LPG',
+    '6': 'Brand Diesel',
+    '10': '98 RON',
+    '11': 'E85'
+}
+
 def get_coordinates(address):
     logger.debug(f"Attempting to get coordinates for address: {address}")
     try:
@@ -103,15 +113,17 @@ def sort_by_distance(fuel_data, user_coords, max_distance=5):  # Reduced initial
 @app.route('/', methods=['GET', 'POST'])
 def index():
     suburb = request.form.get('suburb', '')
+    fuel_type = request.form.get('fuel_type', '1')  # Default to ULP
     fuel_data = None
     logger.debug(f"Request method: {request.method}")
     logger.debug(f"Address submitted: {suburb}")
+    logger.debug(f"Fuel type selected: {FUEL_TYPES.get(fuel_type)}")
     
     if request.method == 'POST' and suburb:
         user_coords = get_coordinates(suburb)
         if user_coords:
-            # Get fuel data with suburb name
-            fuel_data = get_fuel_data(suburb=suburb)
+            # Get fuel data with suburb name and fuel type
+            fuel_data = get_fuel_data(product=int(fuel_type), suburb=suburb)
             if fuel_data:
                 fuel_data = sort_by_distance(fuel_data, user_coords)
                 logger.debug(f"Processed {len(fuel_data)} stations")
@@ -121,7 +133,11 @@ def index():
         else:
             flash("Could not find the specified location")
     
-    return render_template('index.html', fuel_data=fuel_data, suburb=suburb)
+    return render_template('index.html', 
+                         fuel_data=fuel_data, 
+                         suburb=suburb, 
+                         fuel_types=FUEL_TYPES,
+                         selected_fuel=fuel_type)
 
 if __name__ == "__main__":
     app.run(debug=True)
